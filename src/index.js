@@ -10,9 +10,7 @@ const TEMP_RANGES = new Map([
 
 const state = {
     tempValue: 70,
-    headerCityName: 'Seattle',
-    lat: 47.6038321,
-    long: -122.3300624 
+    headerCityName: 'Seattle'
 };
 
 const render = () => {
@@ -55,11 +53,14 @@ const tempColorAndLandscapeChange = () => {
 
 const getWeather = async () => {
     try {
+        console.log('try get location')
         const location = await getLatLon(state.cityName);
         if (!location || location.lat == null || location.lon == null) {
             throw new Error(`Could not find coordinates for "${state.cityName}"`);
         }
         const { lat, lon } = location;
+        console.log('srat weather request');
+
 
         const weatherResponse = await axios.get(WEATHER_URL, { params: { lat, lon } });
 
@@ -67,7 +68,7 @@ const getWeather = async () => {
         if (!Number.isFinite(tempKelvin)) {
             throw new Error('Temperature not found');
         }
-
+        console.log('weather response')
         state.tempValue = Math.round((tempKelvin - 273.15) * (9 / 5) + 32);
         render();
     } catch (error) {
@@ -79,7 +80,7 @@ const registerEventHandler = (event) => {
     document.getElementById('increaseTempControl').addEventListener('click', increaseTemp);
     document.getElementById('decreaseTempControl').addEventListener('click', decreaseTemp);
     document.getElementById('cityNameInput').addEventListener('input', updateCityName);
-    document.getElementById('currentTempButton').addEventListener('click',getWeather);
+    document.getElementById('currentTempButton').addEventListener('click', getWeather);
     render();
 };
 
@@ -92,29 +93,20 @@ const fahrenheitToCelsius = (f) => {
 const getColorsList = () => [...TEMP_RANGES.values()].map(({ color }) => color);
 
 const getLatLon = (place) => {
-  return axios
-    .get(LOCATIONIQ_URL, {
-      params: {
-        key: LOCATIONIQ_API_KEY,
-        q: place,
-        format: 'json',
-      },
-    })
-    .then(response => {
-      const { lat, lon } = response.data[0];
-      return { lat, lon };
-    });
-};
-
-const updateLatLong = (place) => {
-    getLatLon(place)
-    .then(({ lat, lon }) => {
-        state.lat = lat;
-        state.long = lon;
-    })
-    .catch(error => {
-        console.log('Could not get location:', error);
-    });
+    console.log('getLatLon')
+    return axios
+        .get(LOCATION_URL, {
+            params: {
+                q: place,
+            },
+        })
+        .then(response => {
+            const { lat, lon } = response.data[0];
+            return { lat, lon };
+        })
+        .catch(error => {
+            console.log('Could not get location:', error);
+        });
 };
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
