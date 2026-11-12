@@ -53,10 +53,33 @@ const tempColorAndLandscapeChange = () => {
     }
 };
 
+const getWeather = async () => {
+    try {
+        const location = await getLatLon(state.cityName);
+        if (!location || location.lat == null || location.lon == null) {
+            throw new Error(`Could not find coordinates for "${state.cityName}"`);
+        }
+        const { lat, lon } = location;
+
+        const weatherResponse = await axios.get(WEATHER_URL, { params: { lat, lon } });
+
+        const tempKelvin = weatherResponse.data.main.temp;
+        if (!Number.isFinite(tempKelvin)) {
+            throw new Error('Temperature not found');
+        }
+
+        state.tempValue = Math.round((tempKelvin - 273.15) * (9 / 5) + 32);
+        render();
+    } catch (error) {
+        console.error('Error fetching weather data', error);
+    }
+};
+
 const registerEventHandler = (event) => {
     document.getElementById('increaseTempControl').addEventListener('click', increaseTemp);
     document.getElementById('decreaseTempControl').addEventListener('click', decreaseTemp);
     document.getElementById('cityNameInput').addEventListener('input', updateCityName);
+    document.getElementById('currentTempButton').addEventListener('click',getWeather);
     render();
 };
 
