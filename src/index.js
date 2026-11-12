@@ -8,23 +8,39 @@ const TEMP_RANGES = new Map([
 
 const state = {
     tempValue: 70,
-    headerCityName: 'Seattle'
+    headerCityName: 'Seattle',
+    unit: 'F'
 };
 
 const render = () => {
-    document.getElementById('tempValue').textContent = `${state.tempValue} °F`;
+    const displayTemp = state.unit === 'C'
+        ? Math.round(fahrenheitToCelsius(state.tempValue))
+        : Math.round(state.tempValue);
+
+    document.getElementById('tempValue').textContent = `${displayTemp} °${state.unit}`;
+    document.getElementById('tempInC').disabled = state.unit === 'C';
+    document.getElementById('tempInF').disabled = state.unit === 'F';
+
     tempColorAndLandscapeChange();
     document.getElementById('headerCityName').textContent = state.headerCityName;
 };
 
-const increaseTemp = (event) => {
-    state.tempValue++;
+const changeTemp = (step) => {
+    if (state.unit === 'C') {
+        const currentC = Math.round(fahrenheitToCelsius(state.tempValue));
+        state.tempValue = celsiusToFahrenheit(currentC + step);
+    } else {
+        state.tempValue = Math.round(state.tempValue) + 1;
+    }
     render();
 };
 
+const increaseTemp = (event) => {
+    changeTemp(1);
+};
+
 const decreaseTemp = (event) => {
-    state.tempValue--;
-    render();
+    changeTemp(-1);
 };
 
 const updateCityName = (event) => {
@@ -92,12 +108,24 @@ const resetCityName = () => {
     updateCityName();
 };
 
+const switchToFahrenheit = () => {
+    state.unit = 'F'
+    render();
+};
+
+const switchToCelsius = () => {
+    state.unit = 'C';
+    render();
+};
+
 const registerEventHandler = (event) => {
     document.getElementById('increaseTempControl').addEventListener('click', increaseTemp);
     document.getElementById('decreaseTempControl').addEventListener('click', decreaseTemp);
     document.getElementById('cityNameInput').addEventListener('input', updateCityName);
     document.getElementById('currentTempButton').addEventListener('click', getWeather);
     document.getElementById('cityNameReset').addEventListener('click', resetCityName);
+    document.getElementById('tempInC').addEventListener('click', switchToCelsius);
+    document.getElementById('tempInF').addEventListener('click', switchToFahrenheit);
     render();
 };
 
@@ -105,6 +133,10 @@ document.addEventListener('DOMContentLoaded', registerEventHandler);
 
 const fahrenheitToCelsius = (f) => {
     return (f - 32) * 5 / 9;
+};
+
+const celsiusToFahrenheit = (c) => {
+    return c * 9 / 5 + 32;
 };
 
 const getColorsList = () => [...TEMP_RANGES.values()].map(({ color }) => color);
