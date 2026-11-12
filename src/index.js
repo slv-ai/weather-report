@@ -1,3 +1,5 @@
+const DELAY = 1000;
+
 const TEMP_RANGES = new Map([
     [80, { 'color': 'red', 'landscape': '🌵__🐍_🦂_🌵🌵__🐍_🏜_🦂' }],
     [70, { 'color': 'orange', 'landscape': '🌸🌿🌼__🌷🌻🌿_☘️🌱_🌻🌷' }],
@@ -7,12 +9,14 @@ const TEMP_RANGES = new Map([
 ]);
 
 const state = {
-    tempValue: 70
+    tempValue: 70,
+    headerCityName : 'Seattle'
 };
 
 const render = () => {
     document.getElementById('tempValue').textContent = `${state.tempValue} °F`;
     tempColorAndLandscapeChange();
+    document.getElementById('headerCityName').textContent = state.headerCityName;
 };
 
 const increaseTemp = (event) => {
@@ -55,3 +59,20 @@ const fahrenheitToCelsius = (f) => {
 };
 
 const getColorsList = () => [...TEMP_RANGES.values()].map(({ color }) => color);
+
+const getLatLonForPlace = (place) => {
+  return axios
+    .get(LOCATIONIQ_URL, {
+      params: {
+        key: API_KEY_LOCATION_IQ,
+        q: place,
+        format: 'json',
+      },
+    })
+    .then(response => {
+      const { lat, lon } = response.data[0];
+      return { lat, lon };
+    });
+};
+
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
