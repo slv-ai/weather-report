@@ -10,12 +10,13 @@ const TEMP_RANGES = new Map([
 
 const state = {
     tempValue: 70,
-    cityName: 'Seattle'
+    headerCityName: 'Seattle',
+    lat: 47.6038321,
+    long: -122.3300624 
 };
 
 const render = () => {
     document.getElementById('tempValue').textContent = `${state.tempValue} °F`;
-    document.getElementById('headerCityName').textContent = state.cityName;
     tempColorAndLandscapeChange();
     document.getElementById('headerCityName').textContent = state.headerCityName;
 };
@@ -31,7 +32,7 @@ const decreaseTemp = (event) => {
 };
 
 const updateCityName = (event) => {
-    state.cityName = event.target.value;
+    state.headerCityName = event.target.value;
     render();
 };
 
@@ -67,11 +68,11 @@ const fahrenheitToCelsius = (f) => {
 
 const getColorsList = () => [...TEMP_RANGES.values()].map(({ color }) => color);
 
-const getLatLonForPlace = (place) => {
+const getLatLon = (place) => {
   return axios
     .get(LOCATIONIQ_URL, {
       params: {
-        key: API_KEY_LOCATION_IQ,
+        key: LOCATIONIQ_API_KEY,
         q: place,
         format: 'json',
       },
@@ -79,6 +80,17 @@ const getLatLonForPlace = (place) => {
     .then(response => {
       const { lat, lon } = response.data[0];
       return { lat, lon };
+    });
+};
+
+const updateLatLong = (place) => {
+    getLatLon(place)
+    .then(({ lat, lon }) => {
+        state.lat = lat;
+        state.long = lon;
+    })
+    .catch(error => {
+        console.log('Could not get location:', error);
     });
 };
 
