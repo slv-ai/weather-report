@@ -1,5 +1,3 @@
-const DELAY = 1000;
-
 const TEMP_RANGES = new Map([
     [80, { 'color': 'red', 'landscape': '🌵__🐍_🦂_🌵🌵__🐍_🏜_🦂' }],
     [70, { 'color': 'orange', 'landscape': '🌸🌿🌼__🌷🌻🌿_☘️🌱_🌻🌷' }],
@@ -104,5 +102,3 @@ const getLatLon = (place) => {
             console.log('Could not get location:', error);
         });
 };
-
-const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
