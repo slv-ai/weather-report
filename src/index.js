@@ -6,15 +6,24 @@ const TEMP_RANGES = new Map([
     [-Infinity, { 'color': 'teal', 'landscape': '🌲🌲⛄️🌲⛄️🍂🌲🍁🌲🌲⛄️🍂🌲' }],
 ]);
 
+const SKYOPTIONS = new Map([
+    ['Sunny', '☁️ ☁️ ☁️ ☀️ ☁️ ☁️'],
+    ['Cloudy', '☁️☁️ ☁️ ☁️☁️ ☁️ 🌤 ☁️ ☁️☁️'],
+    ['Rainy', '🌧🌈⛈🌧🌧💧⛈🌧🌦🌧💧🌧🌧'],
+    ['Snowy', '🌨❄️🌨🌨❄️❄️🌨❄️🌨❄️❄️🌨🌨']
+]);
+
 const state = {
     tempValue: 70,
-    headerCityName: 'Seattle'
+    headerCityName: 'Seattle',
+    sky : 'Sunny'
 };
 
 const render = () => {
     document.getElementById('tempValue').textContent = `${state.tempValue} °F`;
     tempColorAndLandscapeChange();
     document.getElementById('headerCityName').textContent = state.headerCityName;
+    document.getElementById('sky').textContent = SKYOPTIONS.get(state.sky);
 };
 
 const increaseTemp = (event) => {
@@ -65,27 +74,32 @@ const getLatLon = (place) => {
         });
 };
 
-const getWeather = async () => {
-    try {
-        const location = await getLatLon(state.headerCityName);
-        if (!location || location.lat == null || location.lon == null) {
-            throw new Error(`Could not find coordinates for "${state.headerCityName}"`);
-        }
-        const { lat, lon } = location;
-
-
-        const weatherResponse = await axios.get(WEATHER_URL, { params: { lat, lon } });
-
-        const tempKelvin = weatherResponse.data.main.temp;
-        if (!Number.isFinite(tempKelvin)) {
-            throw new Error('Temperature not found');
-        }
-        state.tempValue = Math.round((tempKelvin - 273.15) * (9 / 5) + 32);
-        render();
-    } catch (error) {
-        console.error('Error fetching weather data', error);
-    }
+const getWeather = () => {
+    return getLatLon(state.headerCityName)
+        .then(location => {
+            if (!location || location.lat == null || location.lon == null) {
+                throw new Error(`Could not find coordinates for '${state.cityName}'`);
+            }
+            const { lat, lon } = location;
+            return axios.get(WEATHER_URL, { params: { lat, lon } });
+        })
+        .then(weatherResponse => {
+            const tempKelvin = weatherResponse.data.main.temp;
+            if (!Number.isFinite(tempKelvin)) {
+                throw new Error('Temperature not found');
+            }
+            state.tempValue = Math.round((tempKelvin - 273.15) * (9 / 5) + 32);
+            render();
+        })
+        .catch(error => {
+            console.error('Error fetching weather data', error);
+        });
 };
+
+const setSky = (event) => {
+    state.sky = event.target.value;
+    render();
+}
 
 const resetCityName = () => {
     document.getElementById('cityNameInput').value = "Seattle";
@@ -98,6 +112,7 @@ const registerEventHandler = (event) => {
     document.getElementById('cityNameInput').addEventListener('input', updateCityName);
     document.getElementById('currentTempButton').addEventListener('click', getWeather);
     document.getElementById('cityNameReset').addEventListener('click', resetCityName);
+    document.getElementById('skySelect').addEventListener('change',setSky);
     render();
 };
 
@@ -108,3 +123,6 @@ const fahrenheitToCelsius = (f) => {
 };
 
 const getColorsList = () => [...TEMP_RANGES.values()].map(({ color }) => color);
+
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+
