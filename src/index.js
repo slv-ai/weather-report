@@ -10,11 +10,12 @@ const TEMP_RANGES = new Map([
 
 const state = {
     tempValue: 70,
-    headerCityName : 'Seattle'
+    cityName: 'Seattle'
 };
 
 const render = () => {
     document.getElementById('tempValue').textContent = `${state.tempValue} °F`;
+    document.getElementById('headerCityName').textContent = state.cityName;
     tempColorAndLandscapeChange();
     document.getElementById('headerCityName').textContent = state.headerCityName;
 };
@@ -26,6 +27,11 @@ const increaseTemp = (event) => {
 
 const decreaseTemp = (event) => {
     state.tempValue--;
+    render();
+};
+
+const updateCityName = (event) => {
+    state.cityName = event.target.value;
     render();
 };
 
@@ -49,6 +55,7 @@ const tempColorAndLandscapeChange = () => {
 const registerEventHandler = (event) => {
     document.getElementById('increaseTempControl').addEventListener('click', increaseTemp);
     document.getElementById('decreaseTempControl').addEventListener('click', decreaseTemp);
+    document.getElementById('cityNameInput').addEventListener('input', updateCityName);
     render();
 };
 
