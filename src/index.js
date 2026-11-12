@@ -10,13 +10,13 @@ const TEMP_RANGES = new Map([
 
 const state = {
     tempValue: 70,
-    headerCityName: 'Seattle'
+    cityName: 'Seattle'
 };
 
 const render = () => {
     document.getElementById('tempValue').textContent = `${state.tempValue} °F`;
     tempColorAndLandscapeChange();
-    document.getElementById('headerCityName').textContent = state.headerCityName;
+    document.getElementById('headerCityName').textContent = state.cityName;
 };
 
 const increaseTemp = (event) => {
@@ -30,7 +30,7 @@ const decreaseTemp = (event) => {
 };
 
 const updateCityName = (event) => {
-    state.headerCityName = event.target.value;
+    state.cityName = event.target.value;
     render();
 };
 
@@ -53,13 +53,11 @@ const tempColorAndLandscapeChange = () => {
 
 const getWeather = async () => {
     try {
-        console.log('try get location')
         const location = await getLatLon(state.cityName);
         if (!location || location.lat == null || location.lon == null) {
             throw new Error(`Could not find coordinates for "${state.cityName}"`);
         }
         const { lat, lon } = location;
-        console.log('srat weather request');
 
 
         const weatherResponse = await axios.get(WEATHER_URL, { params: { lat, lon } });
@@ -68,7 +66,6 @@ const getWeather = async () => {
         if (!Number.isFinite(tempKelvin)) {
             throw new Error('Temperature not found');
         }
-        console.log('weather response')
         state.tempValue = Math.round((tempKelvin - 273.15) * (9 / 5) + 32);
         render();
     } catch (error) {
@@ -93,7 +90,6 @@ const fahrenheitToCelsius = (f) => {
 const getColorsList = () => [...TEMP_RANGES.values()].map(({ color }) => color);
 
 const getLatLon = (place) => {
-    console.log('getLatLon')
     return axios
         .get(LOCATION_URL, {
             params: {
