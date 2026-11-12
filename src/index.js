@@ -1,3 +1,5 @@
+const DELAY = 1000;
+
 const TEMP_RANGES = new Map([
     [80, { 'color': 'red', 'landscape': '🌵__🐍_🦂_🌵🌵__🐍_🏜_🦂' }],
     [70, { 'color': 'orange', 'landscape': '🌸🌿🌼__🌷🌻🌿_☘️🌱_🌻🌷' }],
@@ -13,8 +15,8 @@ const state = {
 
 const render = () => {
     document.getElementById('tempValue').textContent = `${state.tempValue} °F`;
-    document.getElementById('headerCityName').textContent = state.cityName;
     tempColorAndLandscapeChange();
+    document.getElementById('headerCityName').textContent = state.cityName;
 };
 
 const increaseTemp = (event) => {
@@ -57,13 +59,13 @@ const getWeather = async () => {
         }
         const { lat, lon } = location;
 
+
         const weatherResponse = await axios.get(WEATHER_URL, { params: { lat, lon } });
 
         const tempKelvin = weatherResponse.data.main.temp;
         if (!Number.isFinite(tempKelvin)) {
             throw new Error('Temperature not found');
         }
-
         state.tempValue = Math.round((tempKelvin - 273.15) * (9 / 5) + 32);
         render();
     } catch (error) {
@@ -75,7 +77,7 @@ const registerEventHandler = (event) => {
     document.getElementById('increaseTempControl').addEventListener('click', increaseTemp);
     document.getElementById('decreaseTempControl').addEventListener('click', decreaseTemp);
     document.getElementById('cityNameInput').addEventListener('input', updateCityName);
-    document.getElementById('currentTempButton').addEventListener('click',getWeather);
+    document.getElementById('currentTempButton').addEventListener('click', getWeather);
     render();
 };
 
@@ -86,3 +88,21 @@ const fahrenheitToCelsius = (f) => {
 };
 
 const getColorsList = () => [...TEMP_RANGES.values()].map(({ color }) => color);
+
+const getLatLon = (place) => {
+    return axios
+        .get(LOCATION_URL, {
+            params: {
+                q: place,
+            },
+        })
+        .then(response => {
+            const { lat, lon } = response.data[0];
+            return { lat, lon };
+        })
+        .catch(error => {
+            console.log('Could not get location:', error);
+        });
+};
+
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
